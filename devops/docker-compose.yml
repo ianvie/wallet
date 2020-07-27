@@ -1,0 +1,35 @@
+version: '3'
+services:
+  auth-api:
+    build: auth-api
+    ports:
+      - "5000:5000"
+    environment:
+      - HTTP_PORT=5000
+      - JWT_SECRET=supersecret
+
+  loyalty-worker:
+    build: loyalty-worker
+    ports:
+      - "5000:5001"
+    link:
+      - transaction-api
+      - redis
+    environment:
+      - HTTP_PORT=5000
+      - REDIS_URL=redis://127.0.0.1:6379/0
+
+  transaction-api:
+    build: transaction-api
+    ports:
+      - "5000:5002"
+    link:
+     - auth-api
+     - redis
+    environment:
+      - HTTP_PORT=5000
+      - REDIS_URL=redis://127.0.0.1:6379/0
+      - JWT_SECRET=supersecret
+
+  redis:
+    image: redis
